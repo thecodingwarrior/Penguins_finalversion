@@ -1,0 +1,92 @@
+---
+title: "Penguins_assignment"
+Purpose of this script: "Load and clean penguin data, run a statistical test on it, then plot and save a figure of the data"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+
+#Set working directory:
+
+Setwd("~PenguinProject")
+
+#Load the necessary packages, functions and the raw data from the PenguinProject file
+```{r}
+source("Functions/libraries.R")
+source("Functions/cleaning_function.R")
+source("Functions/plotting.R")
+
+```
+
+#Statistical test: Fit a linear regression model between body mass and flipper length
+
+**Generate the dataset required to run the statistical test  on:**
+Clean the data set to clean column names, remove empty rows, remove columns called comment and delta; using the 'cleaning' function
+```{r}
+penguins_clean <- cleaning(penguins_raw)
+head(penguins_clean)
+```
+
+save the clean data into our data_clean folder within the directory
+write.csv(penguins_clean,"data_clean/penguins_clean.csv")
+
+Creating the dataset to only include flipper length, species and body mass and to remove missing data points- this will be the dataset used to make the figure
+```{r}
+dataset2<- bodymass_flipperlength_species(penguins_clean)
+head(dataset2)
+```
+
+**Fit a linear regression model for flipper length as a function of body mass**
+```{r}
+simple.fit = lm(flipper_length_mm  ~ body_mass_g, data = dataset2)
+summary(simple.fit)
+
+```
+The  p value (2.2e-16) indicates that there is a significant positive relationship between flipper length and body mass (p value < 0.001). R^2 = 0.76, which is close to 1- this means a large proportion of the variance in the response variable can be explained by the predictor variables.
+
+**Check it fits the assumptions of normality**
+```{r}
+plot(simple.fit,2)
+```
+The data does not violate the assumptions of normality as the points in the Q-Q plot  lie on a straight diagonal line, with minimal deviations. Therefore this is an appropriate statistical test to use. 
+
+**Check the variables are non-categorical**
+```{r}
+is.factor(penguins_clean$flipper_length_mm) #FALSE
+is.factor(penguins_clean$body_mass_g) #FALSE
+```
+As the output for both variables is FALSE, they are both non categorical and therefore linear regression model is a suitable statistical test to use.
+
+#Generating a figure to demonstrate the linear model
+Using the function 'lm_bodymass_flipperlength' (from the plotting.R function) to generate a figure to demonstrate the statistical test.
+```{r}
+linearmodel<-lm_bodymass_flipperlength(dataset2)
+linearmodel
+```
+
+#Saving as a PNG/SVG file
+**Choose the function that bests suits the destination of the figure: report figure, poster, presentation, svg (better for viewing images on a screen)**
+
+Publication figure
+```{r}
+save_plot_png(dataset2, "Figures/figure1_report.png", width = 20, height = 12, res=600,
+        scaling =0.75 )
+```
+
+Powerpoint figure
+```{r}
+save_plot_png(dataset2, "Figures/figure1_powerpoint.png", 
+                      width = 25, height = 12, res = 600, scaling = 1)
+```
+
+Poster figure
+```{r}
+save_plot_png(dataset2, "Figures/figure1_poster.png", 
+                      width = 40, height = 20, res = 600, scaling = 1.8)
+```
+
+vector images (SVG)
+```{r}
+save_plot_svg(dataset2, "Figures/figure1_vector.svg", 
+                      height = 15, width = 20, scaling = 0.8)
+```
